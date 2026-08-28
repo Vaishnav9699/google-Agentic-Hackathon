@@ -1,0 +1,11 @@
+# Environment variables (NEVER COMMIT SENSITIVE API KEYS)
+.env
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+
+# Logs
+*.log

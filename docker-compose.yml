@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  taskforge-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskforge-agent-runtime
+    ports:
+      - "3001:8080"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - PORT=8080
+      - NODE_ENV=production
+      - GCP_PROJECT_ID=taskforge-agentic-demo
+      - GCP_SERVICE_NAME=taskforge-agent-runtime
+    restart: unless-stopped

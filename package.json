@@ -1,0 +1,26 @@
+{
+  "name": "taskforge-agentic-platform",
+  "version": "1.0.0",
+  "description": "Autonomous AI Agent Platform built for Google All Things Agentic Hackathon leveraging Gemini 3.5 Flash & GCP Cloud Run.",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@google/genai": "^0.1.1",
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.475.0",
+    "vite": "^6.1.0"
+  }
+}
