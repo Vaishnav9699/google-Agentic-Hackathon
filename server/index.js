@@ -1,6 +1,6 @@
 /**
  * TaskForge AI Agent Platform Server (100% Zero External Dependencies)
- * Premium Interactive Glassmorphism UI & Autonomous Gemini 3.5 Flash Engine.
+ * Implements DESIGN.md Obsidian Cyber-Glass System & Autonomous Gemini 3.5 Engine.
  */
 
 import http from "http";
@@ -49,11 +49,11 @@ function getDashboardHtml() {
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #060911;
+      --bg-dark: #04060c;
       --bg-card: rgba(13, 20, 36, 0.75);
       --bg-card-hover: rgba(22, 33, 56, 0.85);
       --border: rgba(255, 255, 255, 0.08);
-      --border-glow: rgba(0, 242, 254, 0.3);
+      --border-glow: rgba(0, 242, 254, 0.35);
       --cyan: #00f2fe;
       --blue: #4facfe;
       --purple: #7928ca;
@@ -79,11 +79,11 @@ function getDashboardHtml() {
       line-height: 1.5;
     }
 
-    /* Glassmorphism Cards */
+    /* Glassmorphism Cards (DESIGN.md Standards) */
     .glass-card {
       background: var(--bg-card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 1.5rem;
@@ -93,7 +93,8 @@ function getDashboardHtml() {
     }
     .glass-card:hover {
       border-color: var(--border-glow);
-      box-shadow: 0 12px 40px 0 rgba(0, 242, 254, 0.12);
+      box-shadow: 0 16px 48px 0 rgba(0, 242, 254, 0.15);
+      transform: translateY(-2px);
     }
 
     .glass-pill {
@@ -194,6 +195,30 @@ function getDashboardHtml() {
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.1);
       border-color: var(--muted);
+    }
+
+    /* Step Pipeline Progress Bar */
+    .pipeline-step {
+      flex: 1;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.72rem;
+      text-align: center;
+      color: var(--dim);
+      transition: all 0.3s;
+    }
+    .pipeline-step.active {
+      background: rgba(0, 242, 254, 0.1);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
+    }
+    .pipeline-step.complete {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--green);
+      color: var(--green);
     }
 
     /* Modal Styling */
@@ -349,6 +374,16 @@ function getDashboardHtml() {
         </button>
       </div>
     </section>
+
+    <!-- Visual Agent Execution Pipeline Progress Bar -->
+    <div className="glass-card" style="padding: 1rem; margin-bottom: 1.5rem;">
+      <div style="display: flex; gap: 0.75rem; justify-content: space-between; flex-wrap: wrap;" id="pipeline-container">
+        <div class="pipeline-step active" id="pstep-1">01: Model Armor Scan</div>
+        <div class="pipeline-step" id="pstep-2">02: Registry Discovery</div>
+        <div class="pipeline-step" id="pstep-3">03: Tool Action Execution</div>
+        <div class="pipeline-step" id="pstep-4">04: Memory Snapshot Commit</div>
+      </div>
+    </div>
 
     <!-- Main Workspace Tabs & 2-Column Split -->
     <div class="glass-card" style="padding: 1rem; margin-bottom: 1.5rem;">
@@ -523,6 +558,19 @@ function getDashboardHtml() {
       dispatchAgentTask();
     }
 
+    function updatePipelineSteps(activeStepNum) {
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById('pstep-' + i);
+        if (i < activeStepNum) {
+          el.className = 'pipeline-step complete';
+        } else if (i === activeStepNum) {
+          el.className = 'pipeline-step active';
+        } else {
+          el.className = 'pipeline-step';
+        }
+      }
+    }
+
     async function dispatchAgentTask() {
       const goal = document.getElementById('taskInput').value;
       if (!goal) return;
@@ -532,6 +580,7 @@ function getDashboardHtml() {
       
       reasoningStepsCount = 0;
       toolExecutionCount = 0;
+      updatePipelineSteps(1);
 
       try {
         await fetch('/api/execute', {
@@ -556,6 +605,9 @@ function getDashboardHtml() {
 
         document.getElementById('metricSteps').innerText = reasoningStepsCount;
         document.getElementById('metricTools').innerText = toolExecutionCount;
+
+        if (logs.some(l => l.type === 'ACTION')) updatePipelineSteps(3);
+        if (logs.some(l => l.type === 'COMPLETE')) updatePipelineSteps(4);
 
         traceContainer.innerHTML = logs.map(t => \`
           <div style="margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 0.5rem;">
