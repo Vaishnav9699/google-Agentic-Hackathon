@@ -361,7 +361,7 @@ function getDashboardHtml() {
             </div>
             <div style="background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 1rem; height: 420px; overflow-y: auto;" id="traceContainer">
               <div style="color: #94a3b8; text-align: center; margin-top: 9rem; font-size: 0.88rem;">
-                Agent standby. Click <strong>"Dispatch Agent"</strong> or select a preset chip above to execute Gemini 3.5.
+                Agent standby. Click <strong>"Dispatch Agent"</strong> or select a tool to execute Gemini 3.5 live.
               </div>
             </div>
           </div>
@@ -476,6 +476,7 @@ function getDashboardHtml() {
 
   <script>
     let activeTrack = 'Taskmaster';
+    let currentTraceId = null;
 
     const TRACK_PRESETS = {
       'Taskmaster': [
@@ -537,8 +538,9 @@ function getDashboardHtml() {
       const goal = document.getElementById('taskInput').value;
       if (!goal) return;
 
+      currentTraceId = 'trace-' + Date.now();
       const traceContainer = document.getElementById('traceContainer');
-      traceContainer.innerHTML = '<div style="color: #38bdf8; font-weight: 600;">⚡ Initializing TaskForge Agent Runtime...</div>';
+      traceContainer.innerHTML = '<div style="color: #38bdf8; font-weight: 600;">⚡ Initializing TaskForge Agent Runtime for directive...</div>';
       
       highlightStep(1);
 
@@ -546,7 +548,7 @@ function getDashboardHtml() {
         await fetch('/api/execute', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ taskGoal: goal, trackCategory: activeTrack, sessionId: 'session-demo' })
+          body: JSON.stringify({ taskGoal: goal, trackCategory: activeTrack, sessionId: 'session-demo', traceId: currentTraceId })
         });
         pollTelemetry();
       } catch (err) {
@@ -556,7 +558,7 @@ function getDashboardHtml() {
 
     async function pollTelemetry() {
       try {
-        const res = await fetch('/api/telemetry');
+        const res = await fetch('/api/telemetry' + (currentTraceId ? '?traceId=' + currentTraceId : ''));
         const logs = await res.json();
         const traceContainer = document.getElementById('traceContainer');
         
@@ -654,6 +656,7 @@ function getDashboardHtml() {
     }
 
     function clearLogs() {
+      currentTraceId = null;
       document.getElementById('traceContainer').innerHTML = '<div style="color: #94a3b8; text-align: center; margin-top: 9rem;">Trace log cleared. Ready for next task.</div>';
     }
 
@@ -702,8 +705,13 @@ const server = http.createServer((req, res) => {
   }
 
   if (url.pathname === "/api/telemetry") {
+    const traceId = url.searchParams.get("traceId");
+    let logs = globalMemoryBank.getAuditLogs(100);
+    if (traceId) {
+      logs = logs.filter(l => l.traceId === traceId);
+    }
     res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(globalMemoryBank.getAuditLogs(50)));
+    return res.end(JSON.stringify(logs));
   }
 
   if (url.pathname === "/api/execute" && req.method === "POST") {
